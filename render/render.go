@@ -16,9 +16,8 @@ func TextToBitmap(s string) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, l*12, 22))
 
 	for i, r := range runes {
-		g := font[r]
-		for y, row := 0, g; len(row) > 0; row, y = row[2:], y+1 {
-			v := uint16(row[0])<<8 | uint16(row[1])
+		y := 0
+		for _, v := range font[r] {
 			for cur, end := 16, 3; cur > end; cur-- {
 				color := func() color.RGBA {
 					if (v>>cur)&0x1 == 1 {
@@ -40,6 +39,7 @@ func TextToBitmap(s string) *image.RGBA {
 				x := (16 - cur) + (12 * i)
 				img.Set(x, y, color())
 			}
+			y++
 		}
 	}
 

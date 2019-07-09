@@ -89,11 +89,9 @@ type bitmap struct {
 }
 
 func (b *bitmap) dump() {
-
 	fmt.Printf("{\n")
-	for pos, stride := 0, 2; pos < len(b.bits); pos += stride {
-		r := b.bits[pos : pos+stride]
-		fmt.Printf("0x%02x, 0x%02x, // %12.12s\n", r[0], r[1], fmt.Sprintf("%08b%04b", r[0], r[1]))
+	for bits, stride := b.bits, 2; len(bits) > 0; bits = bits[stride:] {
+		fmt.Printf("0x%04[1]x, // %016[1]b\n", uint16(bits[0])<<8|uint16(bits[1]))
 	}
 	fmt.Printf("},\n")
 }
@@ -122,6 +120,7 @@ func main() {
 		}
 	}
 
+	fmt.Printf("font = [][]uint16{\n")
 	for pos, stride := 0, 44; pos < len(data); pos += stride {
 		cur := data[pos : pos+stride]
 		b := bitmap{
@@ -129,4 +128,5 @@ func main() {
 		}
 		b.dump()
 	}
+	fmt.Printf("}\n")
 }
