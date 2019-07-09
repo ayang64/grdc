@@ -43,14 +43,7 @@ func TextToBitmap(s string) *image.RGBA {
 		}
 	}
 
-	textWidth, textHeight := l*12, 22
 	termWidth, termHeight, _ := terminal.GetSize(0)
-
-	/*
-		if err != nil {
-			log.Fatalf("terminal.GetSize(0) returned %v", err)
-		}
-	*/
 	termHeight *= 2
 
 	out := image.NewRGBA(image.Rect(0, 0, termWidth, termHeight))
@@ -59,6 +52,9 @@ func TextToBitmap(s string) *image.RGBA {
 
 	textBounds := img.Bounds()
 
+	// this type is used purely for scaling.  i'm trying an averaging algorithm
+	// but i think it is either overkill or doesn't work.  i didn't look this up
+	// -- it is just something stupid i came up with -- do not reuse.
 	type point struct {
 		r     uint32
 		g     uint32
@@ -69,9 +65,11 @@ func TextToBitmap(s string) *image.RGBA {
 
 	bitmap := make([]point, termWidth*termHeight)
 
+	// calculate scaling factors.
 	xf := float64(textBounds.Max.X-textBounds.Min.X) / float64(outBounds.Max.X-outBounds.Min.X)
 	yf := float64(textBounds.Max.Y-textBounds.Min.Y) / float64(outBounds.Max.Y-outBounds.Min.Y)
 
+	// simple translate convenience functon.
 	xlate := func(x int, y int) (int, int) {
 		return int(float64(x) * xf), int(float64(y) * yf)
 	}
@@ -120,9 +118,5 @@ func TextToBitmap(s string) *image.RGBA {
 		out.Set(x, y, newColor)
 	}
 
-	textWidth = textWidth
-	textHeight = textHeight
-
-	// scale img to out
 	return out
 }

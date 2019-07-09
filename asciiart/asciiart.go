@@ -9,7 +9,6 @@ import (
 
 func Encode(w io.Writer, img image.Image) {
 	rect := img.Bounds()
-
 	// minor optimization -- store the previous color and avoid emitting escape
 	// code if the color hasn't changed.
 	prevTop, prevBottom := [3]uint32{0, 0, 0}, [3]uint32{0, 0, 0}
@@ -17,8 +16,8 @@ func Encode(w io.Writer, img image.Image) {
 	buf := &bytes.Buffer{}
 	buf.Write([]byte("\x1b[;f"))
 
-	for y := 0; y < rect.Max.Y; y += 2 {
-		for x := 0; x < rect.Max.X; x++ {
+	for y := rect.Min.Y; y < rect.Max.Y; y += 2 {
+		for x := rect.Min.X; x < rect.Max.X; x++ {
 			col := img.At(x, y)
 			r, g, b, _ := col.RGBA()
 
@@ -37,12 +36,10 @@ func Encode(w io.Writer, img image.Image) {
 				buf.Write([]byte(fmt.Sprintf("\x1b[48;2;%d;%d;%dm", r>>8, g>>8, b>>8)))
 				prevBottom = curBottom
 			}
-
 			buf.WriteRune('▀')
 		}
 	}
 
 	buf.Write([]byte("\x1b[48;2;0;0;0m"))
-
 	io.Copy(w, buf)
 }
